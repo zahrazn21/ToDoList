@@ -11,6 +11,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import dayjs, { Dayjs } from "dayjs";
 import type { typeRes } from "../types/TypeRes";
+import { addTasks, editTasks } from "../api/auth";
 
 export default function AddTask() {
   const [showData, setShowData] = useState<typeRes>({
@@ -45,15 +46,16 @@ export default function AddTask() {
   const addTask = async (e?: React.MouseEvent<HTMLDivElement>) => {
     e?.preventDefault(); // جلوی رفتار پیش‌فرض کلیک یا فرم رو می‌گیره
 
-    const data = {
-      id: Math.random,
-      priority: priority,
+    const data: typeRes = {
+      id: Date.now().toString(),
+      priority,
       title: titleRef.current?.value,
       date: dateRef.current?.value,
       description: descriptionRef.current?.value,
-      url: preview,
-      status: status,
+      url: preview ?? undefined,   // 👈 null رو تبدیل به undefined می‌کنه
+      status,
     };
+
 
     try {
       if (
@@ -63,7 +65,7 @@ export default function AddTask() {
         status !== "" &&
         priority !== ""
       ) {
-        const res = await axios.post("http://localhost:3001/AddTask", data);
+        const res = await addTasks(data)
         console.log("res post", res);
       } else {
         alert("همه فیلد هارا پر کنید");
@@ -139,14 +141,22 @@ export default function AddTask() {
 
   const editTask = async () => {
     try {
-      const res = await axios.patch(`http://localhost:3001/AddTask/${id}`, {
+      const data = {
         description: descriptionRef.current?.value,
         title: titleRef.current?.value,
         date: dateRef.current?.value,
-        status:status,
+        status: status,
         priority: priority
+      }
+      const res = await editTasks(id, data)
+      // const res2 = await axios.patch(`http://localhost:3001/AddTask/${id}`, {
+      //   description: descriptionRef.current?.value,
+      //   title: titleRef.current?.value,
+      //   date: dateRef.current?.value,
+      //   status:status,
+      //   priority: priority
 
-      });
+      // });
       console.log(res);
     } catch (error) {
       console.log(error);
@@ -159,9 +169,8 @@ export default function AddTask() {
         <div className="font-bold relative">
           {isOpen == 1 ? "Add New Task" : "Edit Task"}
           <p
-            className={`${
-              isOpen == 1 ? "w-[80px]" : "w-[40px]"
-            } border-b-2 border-b-[#F24E1E] absolute`}
+            className={`${isOpen == 1 ? "w-[80px]" : "w-[40px]"
+              } border-b-2 border-b-[#F24E1E] absolute`}
           ></p>
         </div>
         {isOpen == 1 ? (
@@ -192,7 +201,7 @@ export default function AddTask() {
               ref={dateRef}
               label="Date"
               icon={<IoCalendarOutline />}
-              // value={selectedDate?.format("YYYY-MM-D")}
+            // value={selectedDate?.format("YYYY-MM-D")}
             ></InputEdit>
           ) : (
             <InputEdit
@@ -261,9 +270,8 @@ export default function AddTask() {
               // value={showData?.description}
               ref={descriptionRef}
               defaultValue={isOpen === 3 ? showData.description : ""}
-              className={`${
-                isOpen == 3 && "text-blue-600"
-              } outline-0 px-3 mt-2 py-2 rounded-[15px] border-2 border-[#D9D9D9] h-[200px] w-[400px]`}
+              className={`${isOpen == 3 && "text-blue-600"
+                } outline-0 px-3 mt-2 py-2 rounded-[15px] border-2 border-[#D9D9D9] h-[200px] w-[400px]`}
               placeholder="Start writing here....."
               name=""
               id=""
