@@ -1,30 +1,48 @@
 import "react";
-import ComplectedBox from "../components/Main/ComplectedBox";
-import TaskShow from "../components/Tasks/TaskShow";
+import { useEffect, useState } from "react";
+import { useAuth } from "../hooks/AppContext";
+import type { typeRes } from "../types/TypeRes";
+import TaskAndDetails from "../components/Tasks/TaskAndDetails";
+import { tasks } from "../api/auth";
 
 export default function MyTask() {
+  const { id } = useAuth();
+  // const [index,setIndex]=useState(0)
+  const [data, setData] = useState<typeRes[]>([])
+  const [showData, setShowData] = useState<typeRes>({
+    id: "",
+    title: "",
+    description: "",
+    date: "",
+    priority: "",
+    status: "",
+    url: "",
+    vital:false
+
+  });
+
+  const showTask = async () => {
+    try {
+      const res = await tasks;
+      console.log("res22", res);
+      const filter = data.filter((k) => k.id === id);
+      setData(res.data);
+      setShowData(filter[0])
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    showTask();
+  }, [id]);
+
+
+
+
+
+
   return (
-    <div className="fixed bottom-0 left-100 w-[70%]  h-[88%] grid md:block">
-      <div
-        dir="rtl"
-        className="h-[99%] flex justify-between items-end gap-10 px-15 py-3    my-1 rounded-[1px]"
-      >
-        <div dir="ltr" className="px-5 py-2 w-[60%] rounded-2xl border-1 h-full border-[#A1A3AB] shadow-xl">
-          <TaskShow></TaskShow>
-        </div>
-        <div
-          dir="ltr"
-          className="w-[60%] px-5 rounded-2xl border-1 h-full border-[#A1A3AB] shadow-xl"
-        >
-          <p className="my-3">
-            <span className="border-b-3  border-[#F24E1E]">My</span>Task
-          </p>
-          <div className="gap-2 grid">
-            <ComplectedBox status="Not Started"></ComplectedBox>
-            <ComplectedBox status="Not Started"></ComplectedBox>
-          </div>
-        </div>
-      </div>
-    </div>
+       <TaskAndDetails data={data} showData={showData} title="My"></TaskAndDetails>
+   
   );
 }
